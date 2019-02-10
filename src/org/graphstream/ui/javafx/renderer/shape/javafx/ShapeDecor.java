@@ -38,6 +38,8 @@ import org.graphstream.ui.graphicGraph.stylesheet.Style;
 import org.graphstream.ui.graphicGraph.stylesheet.StyleConstants.TextMode;
 import org.graphstream.ui.graphicGraph.stylesheet.StyleConstants.Units;
 import org.graphstream.ui.javafx.Backend;
+import org.graphstream.ui.javafx.renderer.shape.javafx.baseShapes.Form;
+import org.graphstream.ui.javafx.renderer.shape.javafx.baseShapes.Form.CubicCurve2D;
 import org.graphstream.ui.view.camera.DefaultCamera2D;
 import org.graphstream.ui.javafx.renderer.ConnectorSkeleton;
 
@@ -81,6 +83,7 @@ public abstract class ShapeDecor {
 	/** Render along the given line coordinates. The shape decoration contains all the metrics
 	  * to render the `iconAndText` icon and text. The coordinates (`x0`, `y0`) and (`x1`, `y1`)
 	  * indicates the start and end points of the line to draw the text on. */
+	public abstract void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText, CubicCurve2D shape);
 	public abstract void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText, double x0, double y0, double x1, double y1 );
 	public abstract void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText, ConnectorSkeleton skel);
 	
@@ -92,6 +95,7 @@ public abstract class ShapeDecor {
 /** A decor that does nothing. */
 class EmptyShapeDecor extends ShapeDecor {
 	public void renderInside(Backend b, DefaultCamera2D camera, IconAndText iconAndText, double x0, double y0, double x1, double y1) {}
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 	public void renderAlong(Backend b, DefaultCamera2D camera, IconAndText iconAndText, double x0, double y0, double x1, double y1) {}
 	public void renderAlong(Backend b, DefaultCamera2D camera, IconAndText iconAndText, ConnectorSkeleton skel) {}
 	public Tuple<Double, Double> size(Backend b, DefaultCamera2D camera, IconAndText iconAndText) {
@@ -122,6 +126,7 @@ abstract class PxShapeDecor extends ShapeDecor {
 }
 
 class CenteredShapeDecor extends PxShapeDecor {
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 	
 	FunctionIn<Backend, Point3, IconAndText, Double, Point3> positionTextAndIconPx = (backend, p, iconAndText, angle) -> {
 		p.x = p.x - ( iconAndText.getWidth() / 2 + 1 ) + iconAndText.padx;
@@ -163,6 +168,7 @@ class CenteredShapeDecor extends PxShapeDecor {
 }
 
 class AtLeftShapeDecor extends PxShapeDecor {
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 	FunctionIn<Backend, Point3, IconAndText, Double, Point3> positionTextAndIconPx = (backend, p, iconAndText, angle) -> {
 		p.x = p.x - ( iconAndText.getWidth() + 2 ) + iconAndText.padx;
 		p.y = p.y + ( iconAndText.getHeight() / 2 ) - iconAndText.pady;
@@ -201,6 +207,7 @@ class AtLeftShapeDecor extends PxShapeDecor {
 }
 
 class AtRightShapeDecor extends PxShapeDecor {
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 
 	FunctionIn<Backend, Point3, IconAndText, Double, Point3> positionTextAndIconPx = (backend, p, iconAndText, angle) -> {
 		p.x = p.x + iconAndText.padx;
@@ -240,6 +247,7 @@ class AtRightShapeDecor extends PxShapeDecor {
 }
 
 class LeftShapeDecor extends PxShapeDecor {
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 	
 	FunctionIn<Backend, Point3, IconAndText, Double, Point3> positionTextAndIconAreaPx = (backend, p, iconAndText, angle) -> {
 		p.x = p.x - ( iconAndText.getWidth() + 2 ) + iconAndText.padx;
@@ -282,6 +290,7 @@ class LeftShapeDecor extends PxShapeDecor {
 }
 
 class RightShapeDecor extends PxShapeDecor {
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 	FunctionIn<Backend, Point3, IconAndText, Double, Point3> positionTextAndIconAreaPx = (backend, p, iconAndText, angle) -> {
 		p.x = p.x + iconAndText.padx;
 		p.y = p.y + ( iconAndText.getHeight() / 2 ) - iconAndText.pady;
@@ -322,6 +331,7 @@ class RightShapeDecor extends PxShapeDecor {
 }
 
 class UnderShapeDecor extends PxShapeDecor {
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 
 	FunctionIn<Backend, Point3, IconAndText, Double, Point3> positionTextAndIconPx = (backend, p, iconAndText, angle) -> {
 		p.x = p.x - ( iconAndText.getWidth() / 2 + 1 ) + iconAndText.padx;
@@ -361,6 +371,7 @@ class UnderShapeDecor extends PxShapeDecor {
 }
 
 class AboveShapeDecor extends PxShapeDecor {
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText,	CubicCurve2D shape) {}
 	FunctionIn<Backend, Point3, IconAndText, Double, Point3> positionTextAndIconPx = (backend, p, iconAndText, angle) -> {
 		p.x = p.x - ( iconAndText.getWidth() / 2 + 1 ) + iconAndText.padx;
 		p.y = p.y - iconAndText.pady;
@@ -428,6 +439,37 @@ class AlongShapeDecor extends PxShapeDecor {
 		if( angle > Math.PI/2 ) 
 			angle = ( Math.PI + angle );
 		
+		renderGu2Px(backend, camera, iconAndText, cx, cy, angle, positionTextAndIconPx );
+	}
+
+	@Override
+	public void renderAlong(Backend backend, DefaultCamera2D camera, IconAndText iconAndText, CubicCurve2D shape) {
+		int x1 = (int)shape.getEndX();
+		int x0 = (int)shape.getStartX();
+		int y1 = (int)shape.getEndY();
+		int y0 = (int)shape.getStartY();
+		Vector2 dir = new Vector2( x1-x0, y1-y0 );
+		dir.scalarMult( 0.5f );
+
+		double cx = x0;
+		double cy = y0;
+		for (int i = 1; i < 4; i++) {
+			cx += shape.getPath()[i][0];
+			cy += shape.getPath()[i][1];
+		}
+		cx /= 4;
+		cy /= 4;
+
+
+		dir.normalize();
+		double angle = Math.acos( dir.dotProduct( 1, 0 ) );
+
+		if( dir.y() > 0 )			// The angle is always computed for acute angles
+			angle = ( Math.PI - angle );
+
+		if( angle > Math.PI/2 )
+			angle = ( Math.PI + angle );
+
 		renderGu2Px(backend, camera, iconAndText, cx, cy, angle, positionTextAndIconPx );
 	}
 

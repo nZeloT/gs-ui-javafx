@@ -36,6 +36,7 @@ import org.graphstream.ui.graphicGraph.GraphicElement;
 import org.graphstream.ui.graphicGraph.StyleGroup;
 import org.graphstream.ui.graphicGraph.stylesheet.Style;
 import org.graphstream.ui.javafx.Backend;
+import org.graphstream.ui.javafx.renderer.shape.javafx.baseShapes.Form.CubicCurve2D;
 import org.graphstream.ui.view.camera.DefaultCamera2D;
 import org.graphstream.ui.javafx.renderer.Skeleton;
 import org.graphstream.ui.javafx.renderer.shape.javafx.IconAndText;
@@ -72,7 +73,10 @@ public class Decorable extends HasSkel {
  	  				theDecor.renderAlong(backend, camera, iconAndText, skel);
  	  			} 
  	  			else {
- 	  				theDecor.renderAlong(backend, camera, iconAndText, edge.from.x, edge.from.y, edge.to.x, edge.to.y);
+ 	  				if(shape instanceof CubicCurve2D)
+ 	  					theDecor.renderAlong(backend, camera, iconAndText, (CubicCurve2D)shape);
+ 	  				else
+ 	  					theDecor.renderAlong(backend, camera, iconAndText, edge.from.x, edge.from.y, edge.to.x, edge.to.y);
  	  			}
  	  		}
  	  		else {
