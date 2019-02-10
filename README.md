@@ -1,3 +1,7 @@
+Added minor hack to have better placement of the edge label in case of a directed graph with back and forth arcs.
+
+-----------------
+
 GraphStream
 ===========
 
